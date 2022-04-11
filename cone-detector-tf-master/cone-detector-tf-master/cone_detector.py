@@ -25,7 +25,7 @@ DETECT_EVERY_N_SECONDS = None  # Use None to perform detection for each frame
 
 # TUNE ME
 CROP_WIDTH = CROP_HEIGHT = 600
-CROP_STEP_HORIZONTAL = CROP_STEP_VERTICAL = 600 - 20  # no cone bigger than 20px
+CROP_STEP_HORIZONTAL = CROP_STEP_VERTICAL = 600 - 15  # no cone bigger than 20px
 SCORE_THRESHOLD = 0.5
 NON_MAX_SUPPRESSION_THRESHOLD = 0.5
 

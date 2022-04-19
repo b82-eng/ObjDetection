@@ -7,8 +7,8 @@ print(cv2.__version__)
 
 ## Camera Object
 # webcam = cv2.VideoCapture(0)
-camLeft = cv2.VideoCapture(0)
-camRight = cv2.VideoCapture(1)
+camLeft = cv2.VideoCapture(1)
+camRight = cv2.VideoCapture(2)
 
 # Ensure at least one camera can be opened 
 if not (camRight.isOpened() | camLeft.isOpened()):
@@ -31,9 +31,13 @@ while(True):
     leftFrame = cv2.cvtColor(leftFrame, cv2.COLOR_BGR2GRAY)
     rightFrame = cv2.cvtColor(rightFrame, cv2.COLOR_BGR2GRAY)
 
+    '''kernel = np.ones((5,5),np.float32)/25
+    leftFrame = cv2.filter2D(leftFrame,-1,kernel)
+    rightFrame = cv2.filter2D(rightFrame,-1,kernel)'''
+
     # Dispaly the individual camera frames
-    cv2.imshow('frame', rightFrame)
-    cv2.imshow('frame2', leftFrame)
+    #cv2.imshow('frame', rightFrame)
+    #cv2.imshow('frame2', leftFrame)
 
     # Initiate SIFT detector
     sift = cv2.SIFT_create()
@@ -94,7 +98,8 @@ while(True):
     # https://docs.opencv.org/master/da/de9/tutorial_py_epipolar_geometry.html
     pts1 = np.int32(pts1)
     pts2 = np.int32(pts2)
-    fundamental_matrix, inliers = cv2.findFundamentalMat(pts1, pts2, cv2.FM_RANSAC)
+    # LMEDS is Least Median of Squres
+    fundamental_matrix, inliers = cv2.findFundamentalMat(pts1, pts2, cv2.FM_LMEDS)
 
     # We select only inlier points
     pts1 = pts1[inliers.ravel() == 1]
@@ -113,6 +118,9 @@ while(True):
     img1_rectified = cv2.warpPerspective(leftFrame, H1, (w1, h1))
     img2_rectified = cv2.warpPerspective(rightFrame, H2, (w2, h2))
 
+    cv2.imshow('img1 Rectified', img1_rectified)
+    cv2.imshow('img2 Rectified', img2_rectified)
+
 
     ##
     ## CV Disparity Map
@@ -125,18 +133,18 @@ while(True):
     # https://docs.opencv.org/4.5.0/d2/d85/classcv_1_1StereoSGBM.html
 
     # Matched block size. It must be an odd number >=1 . Normally, it should be somewhere in the 3..11 range.
-    block_size = 11
-    min_disp = -128
+    block_size = 12
+    min_disp = -16
     max_disp = 128
     # Maximum disparity minus minimum disparity. The value is always greater than zero.
     # In the current implementation, this parameter must be divisible by 16.
     num_disp = max_disp - min_disp
     # Margin in percentage by which the best (minimum) computed cost function value should "win" the second best value to consider the found match correct.
     # Normally, a value within the 5-15 range is good enough
-    uniquenessRatio = 5
+    uniquenessRatio = 15
     # Maximum size of smooth disparity regions to consider their noise speckles and invalidate.
     # Set it to 0 to disable speckle filtering. Otherwise, set it somewhere in the 50-200 range.
-    speckleWindowSize = 200
+    speckleWindowSize = 150
     # Maximum disparity variation within each connected component.
     # If you do speckle filtering, set the parameter to a positive value, it will be implicitly multiplied by 16.
     # Normally, 1 or 2 is good enough.
@@ -164,7 +172,6 @@ while(True):
                                 beta=0, norm_type=cv2.NORM_MINMAX)
     disparity_norm = np.uint8(disparity_norm)
     cv2.imshow("Disparity", disparity_norm)
-  
 
     ## -- ABOVE IS Work In Progress -- ##
     if cv2.waitKey(1) & 0xFF == ord('q'):    

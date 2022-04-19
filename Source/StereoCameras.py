@@ -6,8 +6,8 @@ print(cv2.__version__)
 
 ## Camera Object
 # webcam = cv2.VideoCapture(0)
-camLeft = cv2.VideoCapture(0)
-camRight = cv2.VideoCapture(1)
+camLeft = cv2.VideoCapture(1)
+camRight = cv2.VideoCapture(2)
 
 # Ensure at least one camera can be opened 
 if not (camRight.isOpened() | camLeft.isOpened()):

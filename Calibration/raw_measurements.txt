@@ -1,0 +1,78 @@
+Measure at 81 cm, the dispasrity is 0.3773328993055556
+Next distance to measure: 84cm
+Measure at 84 cm, the dispasrity is 0.3402235243055556
+Next distance to measure: 87cm
+Measure at 87 cm, the dispasrity is 0.3583984375
+Next distance to measure: 92cm
+Measure at 92 cm, the dispasrity is 0.3633355034722222
+Next distance to measure: 97cm
+Measure at 97 cm, the dispasrity is 0.3202039930555556
+Next distance to measure: 102cm
+Measure at 102 cm, the dispasrity is 0.2670355902777778
+Next distance to measure: 107cm
+Measure at 107 cm, the dispasrity is 0.2692599826388889
+Next distance to measure: 112cm
+Measure at 112 cm, the dispasrity is 0.22938368055555555
+Next distance to measure: 117cm
+Measure at 117 cm, the dispasrity is 0.2328559027777778
+Next distance to measure: 122cm
+Measure at 122 cm, the dispasrity is 0.22867838541666666
+Next distance to measure: 132cm
+Measure at 132 cm, the dispasrity is 0.24820963541666666
+Next distance to measure: 142cm
+Measure at 142 cm, the dispasrity is 0.16786024305555555
+Next distance to measure: 152cm
+Measure at 152 cm, the dispasrity is 0.2116970486111111
+Next distance to measure: 162cm
+Measure at 162 cm, the dispasrity is 0.018880208333333332
+Next distance to measure: 172cm
+Measure at 172 cm, the dispasrity is 0.2566189236111111
+Next distance to measure: 182cm
+Measure at 182 cm, the dispasrity is 0.22743055555555555
+Next distance to measure: 192cm
+Measure at 192 cm, the dispasrity is 0.17985026041666666
+Next distance to measure: 202cm
+Measure at 202 cm, the dispasrity is 0.2009006076388889
+Next distance to measure: 212cm
+Measure at 212 cm, the dispasrity is 0.1803927951388889
+Next distance to measure: 222cm
+Measure at 222 cm, the dispasrity is 0.1650390625
+Next distance to measure: 232cm
+Measure at 232 cm, the dispasrity is 0.14680989583333334
+Next distance to measure: 242cm
+Measure at 242 cm, the dispasrity is 0.0
+Next distance to measure: 252cm
+Measure at 252 cm, the dispasrity is 0.12782118055555555
+Next distance to measure: 262cm
+Measure at 262 cm, the dispasrity is 0.1213650173611111
+Next distance to measure: 272cm
+Measure at 272 cm, the dispasrity is 0.0764431423611111
+Next distance to measure: 282cm
+Measure at 282 cm, the dispasrity is 0.11490885416666667
+Next distance to measure: 292cm
+Measure at 292 cm, the dispasrity is 0.08414713541666667
+Next distance to measure: 302cm
+Measure at 302 cm, the dispasrity is 0.09798177083333333
+Next distance to measure: 312cm
+Measure at 312 cm, the dispasrity is 0.0930447048611111
+Next distance to measure: 322cm
+Measure at 322 cm, the dispasrity is 0.08393012152777778
+Next distance to measure: 332cm
+Measure at 332 cm, the dispasrity is 0.07215711805555555
+Next distance to measure: 342cm
+Measure at 342 cm, the dispasrity is 0.050726996527777776
+Next distance to measure: 352cm
+Measure at 352 cm, the dispasrity is 0.053059895833333336
+Next distance to measure: 362cm
+Measure at 362 cm, the dispasrity is 0.08740234375
+Next distance to measure: 372cm
+Measure at 372 cm, the dispasrity is 0.08892144097222222
+Next distance to measure: 382cm
+Measure at 382 cm, the dispasrity is 0.03537326388888889
+Next distance to measure: 392cm
+Measure at 392 cm, the dispasrity is 0.05723741319444445
+Next distance to measure: 402cm
+Measure at 402 cm, the dispasrity is 0.049641927083333336
+Next distance to measure: 412cm
+Measure at 412 cm, the dispasrity is 0.05007595486111111
+Next distance to measure: 422cm

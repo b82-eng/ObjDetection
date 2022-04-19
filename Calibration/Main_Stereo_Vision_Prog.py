@@ -25,6 +25,8 @@ from sklearn.preprocessing import normalize
 
 # Filtering
 kernel= np.ones((3,3),np.uint8)
+global counterdist
+counterdist = 86 # starting cm distance
 
 def coords_mouse_disp(event,x,y,flags,param):
     if event == cv2.EVENT_LBUTTONDBLCLK:
@@ -33,25 +35,30 @@ def coords_mouse_disp(event,x,y,flags,param):
         for u in range (-1,2):
             for v in range (-1,2):
                 average += disp[y+u,x+v]
-        average=average/9
-        Distance= -593.97*average**(3) + 1506.8*average**(2) - 1373.1*average + 522.06
-        Distance= np.around(Distance*0.01,decimals=2)
-        print('Distance: '+ str(Distance)+' m')
+        average=average/9 # 3x3 matrix size = 9
+        #Distance= -593.97*average**(3) + 1506.8*average**(2) - 1373.1*average + 522.06
+        Distance= -2480.0*average**(3) + 3903.8*average**(2) - 2030.7*average + 432.33
+        #Distance= np.around(Distance*0.01,decimals=2)
+        Distance= np.around(Distance,decimals=2)
+        print('Distance: '+ str(Distance)+' cm')
+        print('Distance Bf/d: '+ str((10.47*0.4)/average) )
         
 # This section has to be uncommented if you want to take mesurements and store them in the excel
-##        ws.append([counterdist, average])
-##        print('Measure at '+str(counterdist)+' cm, the dispasrity is ' + str(average))
-##        if (counterdist <= 85):
-##            counterdist += 3
-##        elif(counterdist <= 120):
-##            counterdist += 5
-##        else:
-##            counterdist += 10
-##        print('Next distance to measure: '+str(counterdist)+'cm')
+#        global counterdist
+#        ws.append([counterdist, average])
+#        print('Measure at '+str(counterdist)+' cm, the dispasrity is ' + str(average))
+#        if (counterdist <= 85):
+#            counterdist += 3
+#        elif(counterdist <= 120):
+#            counterdist += 5
+#        else:
+#            counterdist += 10
+#        print('Next distance to measure: '+str(counterdist)+'cm')
 
 # Mouseclick callback
-wb=Workbook()
-ws=wb.active  
+#wb=Workbook()
+#ws=wb.active  
+
 
 #*************************************************
 #***** Parameters for Distortion Calibration *****
@@ -62,8 +69,8 @@ criteria =(cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 criteria_stereo= (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
 # Prepare object points
-objp = np.zeros((9*6,3), np.float32)
-objp[:,:2] = np.mgrid[0:9,0:6].T.reshape(-1,2)
+objp = np.zeros((7*7,3), np.float32)
+objp[:,:2] = np.mgrid[0:7,0:7].T.reshape(-1,2)
 
 # Arrays to store object points and image points from all images
 objpoints= []   # 3d points in real world space
@@ -74,13 +81,14 @@ imgpointsL= []
 print('Starting calibration for the 2 cameras... ')
 # Call all saved images
 for i in range(0,67):   # Put the amount of pictures you have taken for the calibration inbetween range(0,?) wenn starting from the image number 0
+    print('iteration: ' + str(i))
     t= str(i)
     ChessImaR= cv2.imread('chessboard-R'+t+'.png',0)    # Right side
     ChessImaL= cv2.imread('chessboard-L'+t+'.png',0)    # Left side
     retR, cornersR = cv2.findChessboardCorners(ChessImaR,
-                                               (9,6),None)  # Define the number of chees corners we are looking for
+                                               (7,7),None)  # Define the number of chees corners we are looking for
     retL, cornersL = cv2.findChessboardCorners(ChessImaL,
-                                               (9,6),None)  # Left side
+                                               (7,7),None)  # Left side
     if (True == retR) & (True == retL):
         objpoints.append(objp)
         cv2.cornerSubPix(ChessImaR,cornersR,(11,11),(-1,-1),criteria)
@@ -179,7 +187,7 @@ wls_filter.setSigmaColor(sigma)
 #*************************************
 
 # Call the two cameras
-CamR= cv2.VideoCapture(0)   # Wenn 0 then Right Cam and wenn 2 Left Cam
+CamR= cv2.VideoCapture(1)   # Wenn 0 then Right Cam and wenn 2 Left Cam
 CamL= cv2.VideoCapture(2)
 
 while True:
@@ -217,7 +225,7 @@ while True:
 
     # Using the WLS filter
     filteredImg= wls_filter.filter(dispL,grayL,None,dispR)
-    filteredImg = cv2.normalize(src=filteredImg, dst=filteredImg, beta=0, alpha=255, norm_type=cv2.NORM_MINMAX);
+    filteredImg = cv2.normalize(src=filteredImg, dst=filteredImg, beta=0, alpha=255, norm_type=cv2.NORM_MINMAX)
     filteredImg = np.uint8(filteredImg)
     #cv2.imshow('Disparity Map', filteredImg)
     disp= ((disp.astype(np.float32)/ 16)-min_disp)/num_disp # Calculation allowing us to have 0 for the most distant object able to detect
@@ -235,9 +243,9 @@ while True:
     filt_Color= cv2.applyColorMap(filteredImg,cv2.COLORMAP_OCEAN) 
 
     # Show the result for the Depth_image
-    #cv2.imshow('Disparity', disp)
-    #cv2.imshow('Closing',closing)
-    #cv2.imshow('Color Depth',disp_Color)
+    cv2.imshow('Disparity', disp)
+    cv2.imshow('Closing',closing)
+    cv2.imshow('Color Depth',disp_Color)
     cv2.imshow('Filtered Color Depth',filt_Color)
 
     # Mouse click
@@ -248,7 +256,7 @@ while True:
         break
     
 # Save excel
-##wb.save("data4.xlsx")
+wb.save("data4.xlsx")
 
 # Release the Cameras
 CamR.release()

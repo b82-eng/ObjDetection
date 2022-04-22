@@ -2,13 +2,14 @@ from telnetlib import NOP
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
-print(cv2.__version__)
+
+#print(cv2.__version__)
 
 
 ## Camera Object
 # webcam = cv2.VideoCapture(0)
-camLeft = cv2.VideoCapture(1)
-camRight = cv2.VideoCapture(2)
+camLeft = cv2.VideoCapture(0)
+camRight = cv2.VideoCapture(1)
 
 # Ensure at least one camera can be opened 
 if not (camRight.isOpened() | camLeft.isOpened()):
@@ -21,6 +22,7 @@ while((not leftFrame.any()) | (not rightFrame.any())):
     ret2, rightFrame = camRight.read() 
 
 ## Infinite Loop
+
 while(True):
 
     # Capture frame-by-frame    
@@ -34,6 +36,12 @@ while(True):
     '''kernel = np.ones((5,5),np.float32)/25
     leftFrame = cv2.filter2D(leftFrame,-1,kernel)
     rightFrame = cv2.filter2D(rightFrame,-1,kernel)'''
+
+    leftFrame = cv2.fastNlMeansDenoising(leftFrame,None,20,7,21)
+    rightFrame = cv2.fastNlMeansDenoising(rightFrame,None,20,7,21)
+
+    '''leftFrame = cv2.GaussianBlur(leftFrame,(5,5),0) # Gaussian filtering attempt
+    rightFrame = cv2.GaussianBlur(rightFrame,(5,5),0)'''
 
     # Dispaly the individual camera frames
     #cv2.imshow('frame', rightFrame)
@@ -86,10 +94,6 @@ while(True):
     keypoint_matches = cv2.drawMatchesKnn(
         leftFrame, kp1, rightFrame, kp2, matches[300:500], None, **draw_params)
     cv2.imshow("Keypoint matches", keypoint_matches)
-
-
-
-
 
     # ------------------------------------------------------------
     # STEREO RECTIFICATION

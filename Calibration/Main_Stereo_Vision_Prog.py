@@ -16,6 +16,7 @@ from sklearn.preprocessing import normalize
 from utils import cv_utils
 from utils import operations as ops
 from utils import tf_utils
+from os import system, name
 
 FROZEN_GRAPH_PATH = 'models/ssd_mobilenet_v1/frozen_inference_graph.pb'
 OUTPUT_WINDOW_WIDTH = 640
@@ -40,14 +41,14 @@ def coords_mouse_disp(event,x,y,flags,param):
         average=0
         for u in range (-1,2):
             for v in range (-1,2):
-                average += disp[y+u,x+v]
+                average += dispFilt[y+u,x+v]
         average=average/9 # 3x3 matrix size = 9
         #Distance= -593.97*average**(3) + 1506.8*average**(2) - 1373.1*average + 522.06
         Distance= -2480.0*average**(3) + 3903.8*average**(2) - 2030.7*average + 432.33
         #Distance= np.around(Distance*0.01,decimals=2)
         Distance= np.around(Distance,decimals=2)
         print('Distance at clicked point: '+ str(Distance)+' cm')
-        print('Distance Bf/d: '+ str((10.47*0.4)/average) )
+        #print('Distance Bf/d: '+ str((10.47*0.4)/average) )
         
 # This section is uncommented if one needs to recalibrate due to changes in the camera setup
 #        global counterdist
@@ -156,7 +157,7 @@ Right_Stereo_Map= cv2.initUndistortRectifyMap(MRS, dRS, RR, PR,
 ### Stereovision parameters ###
 
 # Create StereoSGBM and prepare all parameters
-window_size = 3
+'''window_size = 3
 min_disp = 2
 num_disp = 130-min_disp
 stereo = cv2.StereoSGBM_create(minDisparity = min_disp,
@@ -167,7 +168,22 @@ stereo = cv2.StereoSGBM_create(minDisparity = min_disp,
     speckleRange = 32,
     disp12MaxDiff = 5,
     P1 = 8*3*window_size**2,
-    P2 = 32*3*window_size**2)
+    P2 = 32*3*window_size**2)'''
+
+window_size = 3
+min_disp = -16
+max_disp = 128
+num_disp = max_disp - min_disp
+block_size = 8
+stereo = cv2.StereoSGBM_create(minDisparity = min_disp,
+    numDisparities = num_disp,
+    blockSize = 8,
+    uniquenessRatio = 15,
+    speckleWindowSize = 150,
+    speckleRange = 2,
+    disp12MaxDiff = 0,
+    P1 = 8*1*block_size*block_size,
+    P2 = 32*1*block_size**2)
 
 # Used for the filtered image
 stereoR=cv2.ximgproc.createRightMatcher(stereo) # Create another stereo for right this time
@@ -193,10 +209,10 @@ with tf.Session(graph=detection_graph) as sess:
         retL, frameL= CamL.read()
 
         # Image denoising and rectification
-        frameL = cv2.fastNlMeansDenoising(frameL,None,20,7,21)
+        #frameL = cv2.fastNlMeansDenoising(frameL,None,20,7,21)
         Left_nice= cv2.remap(frameL,Left_Stereo_Map[0],Left_Stereo_Map[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
 
-        frameR = cv2.fastNlMeansDenoising(frameR,None,20,7,21)
+        #frameR = cv2.fastNlMeansDenoising(frameR,None,20,7,21)
         Right_nice= cv2.remap(frameR,Right_Stereo_Map[0],Right_Stereo_Map[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
 
         ##    # Draw Red lines
@@ -223,13 +239,14 @@ with tf.Session(graph=detection_graph) as sess:
         dispL= np.int16(dispL)
         dispR= np.int16(dispR)
 
-        # Using the WLS filter
-        filteredImg= wls_filter.filter(dispL,grayL,None,dispR)
-        filteredImg = cv2.normalize(src=filteredImg, dst=filteredImg, beta=0, alpha=255, norm_type=cv2.NORM_MINMAX)
+        # Using the WLS filter  (Weighted Least Squares - Smoothes while preserving edges)
+        filteredImgPre= wls_filter.filter(dispL,grayL,None,dispR)
+        filteredImg = cv2.normalize(src=filteredImgPre, dst=filteredImgPre, beta=0, alpha=255, norm_type=cv2.NORM_MINMAX)
         #cv2.imshow('Disparity Map', filteredImg)
         filteredImg = np.uint8(filteredImg)
         #cv2.imshow('Disparity Map', filteredImg)
         disp= ((disp.astype(np.float32)/ 16)-min_disp)/num_disp # Calculation allowing us to have 0 for the most distant object able to detect
+        dispFilt= ((filteredImg.astype(np.float32)/ 16)-min_disp)/num_disp # Calculation allowing us to have 0 for the most distant object able to detect
 
         # Resize the image for faster executions
         #dispR= cv2.resize(disp,None,fx=0.7, fy=0.7, interpolation = cv2.INTER_AREA)
@@ -243,11 +260,13 @@ with tf.Session(graph=detection_graph) as sess:
         #disp_Color= cv2.applyColorMap(dispC,cv2.COLORMAP_OCEAN)         # Change the Color of the Picture into an Ocean Color_Map
         filt_Color= cv2.applyColorMap(filteredImg,cv2.COLORMAP_OCEAN)    # Applies colormap to filtered image as it makes it easier for a human to see the contrast
 
+
         # Show the result for the Depth_image
         #cv2.imshow('Disparity', disp)
         #cv2.imshow('Closing',closing)
         #cv2.imshow('Color Depth',disp_Color)
-        cv2.imshow('Filtered Color Depth',filt_Color) # Output window with disparity map for user to click
+        cv2.imshow('Filtered Img Depth',dispFilt)
+        FrameFiltColor = cv2.imshow('Filtered Color Depth',filt_Color) # Output window with disparity map for user to click
 
         frame = Left_nice # Uses rectified image from left camera for cone detection
         
@@ -294,6 +313,11 @@ with tf.Session(graph=detection_graph) as sess:
         boxMidX = []
         boxMidY = []
 
+      
+        
+
+        
+
         for box, score in zip(boxes, boxes_scores):
             if score > SCORE_THRESHOLD:
                 conesfnd += 1
@@ -305,17 +329,20 @@ with tf.Session(graph=detection_graph) as sess:
                 cv_utils.add_rectangle_with_text(
                     frame, ymin, xmin, ymax, xmax,
                     color_detected_rgb, text)
+
                 # Calculates location specs for each detected cone
-                boxMidX.append(xmax-xmin)
-                boxMidY.append(ymax-ymin)
+                midx = boxMidX.append(int((xmax+xmin)/2))
+                midy = boxMidY.append(int((ymax+ymin)/1.66))
+                print("midx: " + str(midx) + " midy: " + str(midy))
+                
 
 
         #if OUTPUT_WINDOW_WIDTH:
         #    frame = cv_utils.resize_width_keeping_aspect_ratio(
         #        frame, OUTPUT_WINDOW_WIDTH)
 
-        cv2.imshow('TF Detection Result (Left Camera)', frame)
-        cv2.waitKey(1)
+        '''cv2.imshow('TF Detection Result (Left Camera)', frame)
+        cv2.waitKey(1)'''
         #processed_images += 1
 
         toc = time.time()
@@ -329,24 +356,49 @@ with tf.Session(graph=detection_graph) as sess:
             
             # Get locations of each cone detection
             for j in range(conesfnd):
-                x = boxMidX[j]*2
+                #x = boxMidX[j]*2
+                x = boxMidX[j]
                 y = boxMidY[j]
+
+                # Radius of circle
+                radius = 10
+                # Blue color in BGR
+                color = (0, 0, 255)
+                # Line thickness of 2 px
+                thickness = 5
 
                 average = 0
                 for u in range (-1,2):
                     for v in range (-1,2):
-                        average += disp[y+u,x+u]
+                        average += disp[y+u,x+v]
                 average = average / 9 # 3x3 matrix size = 9
-                Distance = -2480.0*average**(3) + 3903.8*average**(2) - 2030.7*average + 432.33
+                #Distance = -2480.0*average**(3) + 3903.8*average**(2) - 2030.7*average + 432.33
+                Distance = -46981.0*average**(3) + 86214.0*average**(2) - 53268.0*average + 11291
                 #Distance= np.around(Distance*0.01,decimals=2)
                 Distance= np.around(Distance,decimals=2)
-                print('Distance of cone ' + str(j+1) + ': '+ str(Distance)+' cm')
-                print('Distance Bf/d: '+ str((10.47*0.4)/average) )
+                print('Distance of cone ' + str(j+1) + ': '+ str(Distance)+' cm' + '(' + str(np.around(Distance/2.54,decimals=1)) + ' in.)')
+                
+                #print('Distance Bf/d: '+ str((10.47*0.4)/average) )
+                print('Disparity of cone ' + str(j+1) + ': '+ str(average)+' px')
+
+                cv2.circle(disp, (x,y), radius, color, thickness)
+                cv2.imshow('Disparity', disp)
+
+                cv2.circle(frame, (x,y), radius, color, thickness)
+                cv2.imshow('TF Detection Result (Left Camera)', frame)
+                cv2.waitKey(1)
+                #cv2.circle(showFrame, (x,y), radius, color, thickness)
+                #cv2.imshow('TF Detection Result (Left Camera)', showFrame)
+
+                
         else:
             print('No cones found.')
 
         # Mouse click
         cv2.setMouseCallback("Filtered Color Depth",coords_mouse_disp,filt_Color)
+        
+        #input("Press Enter to continue...")
+        
         
         # End the Programme
         if cv2.waitKey(1) & 0xFF == ord(' '):
